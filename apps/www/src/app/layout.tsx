@@ -1,5 +1,6 @@
 import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
+import { CosmosProvider, QueryProvider } from '~/providers';
 import '~/styles/globals.css';
 
 import { Toaster } from '~/components/ui/sonner';
@@ -13,10 +14,14 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang='en'>
-      <body className={`font-sans ${GeistSans.variable}`}>
-        {children}
-        <Toaster />
-      </body>
+      <QueryProvider>
+        <CosmosProvider>
+          <body className={`font-sans ${GeistSans.variable}`}>
+            {children}
+            <Toaster />
+          </body>
+        </CosmosProvider>
+      </QueryProvider>
     </html>
   );
 };
