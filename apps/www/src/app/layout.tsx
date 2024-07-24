@@ -14,14 +14,14 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang='en'>
-      <QueryProvider>
-        <CosmosProvider>
-          <body className={`font-sans ${GeistSans.variable}`}>
+      <body className={`font-sans ${GeistSans.variable}`}>
+        <QueryProvider>
+          <CosmosProvider>
             {children}
             <Toaster />
-          </body>
-        </CosmosProvider>
-      </QueryProvider>
+          </CosmosProvider>
+        </QueryProvider>
+      </body>
     </html>
   );
 };

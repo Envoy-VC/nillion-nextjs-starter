@@ -1,9 +1,9 @@
 'use client';
 
 /* eslint-disable no-nested-ternary -- allow nested */
-import React, { useEffect, useState } from 'react';
+import React, { type ComponentProps, useEffect, useState } from 'react';
 
-import { truncate } from '~/lib/utils';
+import { cn, errorHandler, truncate } from '~/lib/utils';
 
 import { toast } from 'sonner';
 import { useCopyToClipboard } from 'usehooks-ts';
@@ -12,7 +12,7 @@ import { Button } from './ui/button';
 
 import { CircleCheck, CopyIcon, Eye, EyeOff } from 'lucide-react';
 
-interface TextCopyProps {
+interface TextCopyProps extends ComponentProps<'div'> {
   text: string;
   type?: 'text' | 'password';
   enableTruncate?: boolean;
@@ -34,6 +34,8 @@ export const TextCopy = ({
   },
   canCopy = true,
   enableToast = false,
+  className,
+  ...props
 }: TextCopyProps) => {
   const { length, fromMiddle } = truncateOptions;
   const [, copy] = useCopyToClipboard();
@@ -47,22 +49,7 @@ export const TextCopy = ({
       if (enableToast) toast.success('Copied to clipboard');
       setCopied(true);
     } catch (error) {
-      let errorMessage: string;
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      } else if (
-        error &&
-        typeof error === 'object' &&
-        'message' in error &&
-        typeof error.message === 'string'
-      ) {
-        errorMessage = error.message;
-      } else {
-        errorMessage = 'An error occurred';
-      }
-      toast.error(errorMessage);
+      if (enableToast) toast.error(errorHandler(error));
     }
   };
 
@@ -76,7 +63,10 @@ export const TextCopy = ({
   }, [copied]);
 
   return (
-    <div className='flex flex-row items-center gap-2'>
+    <div
+      className={cn('flex flex-row items-center gap-2', className)}
+      {...props}
+    >
       <div className='font-semibold'>
         {type === 'text'
           ? enableTruncate

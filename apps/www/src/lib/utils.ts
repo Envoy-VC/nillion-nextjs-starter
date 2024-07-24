@@ -5,6 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const sleep = async (ms: number) => {
+  return await new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
 export const truncate = (
   str: string,
   length?: number,
