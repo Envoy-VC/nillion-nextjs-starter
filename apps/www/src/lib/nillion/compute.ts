@@ -1,18 +1,22 @@
 import { config } from './config';
+import { getQuote, payQuote } from './payment';
 
-import type { ComputeProps } from '~/types/nillion';
+import type { ComputeProps, WithNillion } from '~/types/nillion';
 
-export const compute = async ({
+export const computeNillion = async ({
   nillion,
   client,
-  receipt,
+  proto,
+  signingStargateClient,
+  address,
   programId,
   storeIds,
   inputParties,
   outputParties,
   outputNames,
   computeTimeSecrets,
-}: ComputeProps) => {
+  memo = 'Compute Program',
+}: WithNillion<ComputeProps>) => {
   const programBindings = new nillion.ProgramBindings(programId);
 
   inputParties.forEach(({ id, name }) => {
@@ -36,6 +40,21 @@ export const compute = async ({
       nadaValues.insert(secret.name, secretInteger);
     }
   }
+
+  // Pay Quote
+  const quote = await getQuote({
+    client,
+    operation: nillion.Operation.compute(programId, nadaValues),
+  });
+
+  const receipt = await payQuote({
+    nillion,
+    quote,
+    memo,
+    signingStargateClient,
+    from: address,
+    proto,
+  });
 
   const uuid = await client.compute(
     config.clusterId,

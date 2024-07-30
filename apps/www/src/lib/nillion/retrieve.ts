@@ -1,13 +1,32 @@
 import { config } from './config';
+import { getQuote, payQuote } from './payment';
 
-import type { RetrieveSecretProps } from '~/types/nillion';
+import type { RetrieveSecretProps, WithNillion } from '~/types/nillion';
 
-export const retrieveSecret = async ({
+export const retrieveNillionSecret = async ({
+  nillion,
   client,
-  receipt,
+  proto,
+  signingStargateClient,
+  address,
   storeId,
   secretName,
-}: RetrieveSecretProps) => {
+  memo = 'Retrieve Secret',
+}: WithNillion<RetrieveSecretProps>) => {
+  const quote = await getQuote({
+    client,
+    operation: nillion.Operation.retrieve_value(),
+  });
+
+  const receipt = await payQuote({
+    nillion,
+    quote,
+    memo,
+    signingStargateClient,
+    from: address,
+    proto,
+  });
+
   const retrieved = await client.retrieve_value(
     config.clusterId,
     storeId,

@@ -17,6 +17,14 @@ export interface Party {
   name: string;
 }
 
+export type WithNillion<T> = T & {
+  nillion: typeof n;
+  client: n.NillionClient;
+  proto: typeof p;
+  signingStargateClient: SigningStargateClient;
+  address: string;
+};
+
 export interface PayQuoteProps {
   nillion: typeof n;
   signingStargateClient: SigningStargateClient;
@@ -27,10 +35,9 @@ export interface PayQuoteProps {
 }
 
 export interface StoreSecretsProps {
-  nillion: typeof n;
-  client: n.NillionClient;
-  secrets: n.NadaValues;
-  receipt: n.PaymentReceipt;
+  secrets: Secret[];
+  memo?: string;
+  ttl?: number;
   usersWithRetrievePermissions?: string[];
   usersWithUpdatePermissions?: string[];
   usersWithDeletePermissions?: string[];
@@ -41,27 +48,23 @@ export interface StoreSecretsProps {
 }
 
 export interface StoreProgramProps {
-  client: n.NillionClient;
-  receipt: n.PaymentReceipt;
-  data: Uint8Array;
+  path: string;
   programName: string;
+  memo?: string;
 }
 
 export interface RetrieveSecretProps {
-  client: n.NillionClient;
-  receipt: n.PaymentReceipt;
   storeId: string;
   secretName: string;
+  memo?: string;
 }
 
 export interface ComputeProps {
-  nillion: typeof n;
-  client: n.NillionClient;
-  receipt: n.PaymentReceipt;
   programId: string;
   storeIds: string[];
   inputParties: Party[];
   outputParties: Party[];
   outputNames: string[];
   computeTimeSecrets: Secret[];
+  memo?: string;
 }

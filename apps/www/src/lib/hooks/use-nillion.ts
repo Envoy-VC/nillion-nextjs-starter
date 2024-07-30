@@ -3,34 +3,20 @@ import { useAccount, useStargateSigningClient } from 'graz';
 
 import {
   createNillionClient,
-  getQuote,
-  payQuote,
-  storeProgram as storeNillionProgram,
-  storeSecrets as storeNillionSecrets,
+  retrieveNillionSecret,
+  storeNillionProgram,
+  storeNillionSecrets,
 } from '../nillion';
+import { computeNillion } from '../nillion/compute';
 import { useNillionStore } from '../stores';
 import { useKeyStore } from './use-keystore';
 
-import type { Secret } from '~/types/nillion';
-
-interface StoreSecretParams {
-  secrets: Secret[];
-  ttl?: number;
-  memo?: string;
-  usersWithRetrievePermissions?: string[];
-  usersWithUpdatePermissions?: string[];
-  usersWithDeletePermissions?: string[];
-  computePermissions?: {
-    programIds: string[];
-    users: string[];
-  };
-}
-
-interface StoreProgramParams {
-  path: string;
-  programName: string;
-  memo?: string;
-}
+import type {
+  ComputeProps,
+  RetrieveSecretProps,
+  StoreProgramProps,
+  StoreSecretsProps,
+} from '~/types/nillion';
 
 export const useNillion = () => {
   const { data: account } = useAccount();
@@ -64,95 +50,81 @@ export const useNillion = () => {
     return { client, nillion, proto };
   };
 
-  const storeSecrets = async ({
-    secrets,
-    ttl = 30,
-    memo,
-    ...props
-  }: StoreSecretParams) => {
+  const storeSecrets = async (props: StoreSecretsProps) => {
     if (!signingStargateClient) {
       throw new Error('Stargate client not found');
     }
     if (!account) {
       throw new Error('Account not found');
     }
-    const { client, nillion, proto } = await initialize();
-    const nadaValues = new nillion.NadaValues();
-    for (const secret of secrets) {
-      if (typeof secret.value === 'string') {
-        const byteArraySecret = new TextEncoder().encode(secret.value);
-        const secretBlob = nillion.NadaValue.new_secret_blob(byteArraySecret);
-        nadaValues.insert(secret.name, secretBlob);
-      } else {
-        const secretInteger = nillion.NadaValue.new_secret_integer(
-          secret.value.toString()
-        );
-        nadaValues.insert(secret.name, secretInteger);
-      }
-    }
-    const quote = await getQuote({
-      client,
-      operation: nillion.Operation.store_values(nadaValues, ttl),
-    });
-
-    const receipt = await payQuote({
-      nillion,
-      quote,
-      memo,
-      signingStargateClient,
-      from: account.bech32Address,
-      proto,
-    });
+    const nillion = await initialize();
 
     const storeId = await storeNillionSecrets({
-      client,
-      nillion,
-      secrets: nadaValues,
-      receipt,
+      ...nillion,
+      signingStargateClient,
+      address: account.bech32Address,
       ...props,
     });
 
     return storeId;
   };
 
-  const storeProgram = async ({
-    path,
-    programName,
-    memo,
-  }: StoreProgramParams) => {
+  const storeProgram = async (props: StoreProgramProps) => {
     if (!signingStargateClient) {
       throw new Error('Stargate client not found');
     }
     if (!account) {
       throw new Error('Account not found');
     }
-    const { client, nillion, proto } = await initialize();
-    const res = await fetch(path);
-    const buffer = new Uint8Array(await res.arrayBuffer());
-
-    const quote = await getQuote({
-      client,
-      operation: nillion.Operation.store_program(buffer),
-    });
-
-    const receipt = await payQuote({
-      nillion,
-      quote,
-      memo,
-      signingStargateClient,
-      from: account.bech32Address,
-      proto,
-    });
+    const nillion = await initialize();
 
     const programId = await storeNillionProgram({
-      client,
-      receipt,
-      data: buffer,
-      programName,
+      ...nillion,
+      signingStargateClient,
+      address: account.bech32Address,
+      ...props,
     });
 
     return programId;
   };
 
-  return { storeSecrets, storeProgram };
+  const retrieveSecret = async (props: RetrieveSecretProps) => {
+    if (!signingStargateClient) {
+      throw new Error('Stargate client not found');
+    }
+    if (!account) {
+      throw new Error('Account not found');
+    }
+    const nillion = await initialize();
+
+    const value = await retrieveNillionSecret({
+      ...nillion,
+      signingStargateClient,
+      address: account.bech32Address,
+      ...props,
+    });
+
+    return value;
+  };
+
+  const compute = async (props: ComputeProps) => {
+    if (!signingStargateClient) {
+      throw new Error('Stargate client not found');
+    }
+    if (!account) {
+      throw new Error('Account not found');
+    }
+    const nillion = await initialize();
+
+    const value = await computeNillion({
+      ...nillion,
+      signingStargateClient,
+      address: account.bech32Address,
+      ...props,
+    });
+
+    return value;
+  };
+
+  return { storeSecrets, storeProgram, retrieveSecret, compute };
 };
