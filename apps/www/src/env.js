@@ -11,7 +11,7 @@ export const env = createEnv({
     NEXT_PUBLIC_NILLION_RPC_URL: z.string().url(),
     NEXT_PUBLIC_NILLION_REST_URL: z.string().url(),
     NEXT_PUBLIC_NILLION_CLUSTER_ID: z.string().min(1),
-    NEXT_PUBLIC_NILLION_BOOTNODE_WEBSOCKET_URL: z.string().url(),
+    NEXT_PUBLIC_NILLION_BOOTNODE_WEBSOCKET_URL: z.string().min(1),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_WALLETCONNECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_ID,
