@@ -29,7 +29,7 @@ export interface PayQuoteProps {
 export interface StoreSecretsProps {
   nillion: typeof n;
   client: n.NillionClient;
-  secrets: Secret[];
+  secrets: n.NadaValues;
   receipt: n.PaymentReceipt;
   usersWithRetrievePermissions?: string[];
   usersWithUpdatePermissions?: string[];
@@ -43,7 +43,7 @@ export interface StoreSecretsProps {
 export interface StoreProgramProps {
   client: n.NillionClient;
   receipt: n.PaymentReceipt;
-  path: string;
+  data: Uint8Array;
   programName: string;
 }
 
